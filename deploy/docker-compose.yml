@@ -1,0 +1,47 @@
+version: '3.6'
+
+services:
+  postgres:
+    container_name: mvpmatch-db
+    image: postgres:15.1
+    ports:
+      - 5432:5432
+    environment:
+      - POSTGRES_DB=mvpmatch
+      - POSTGRES_USER=mvpmatch
+      - POSTGRES_PASSWORD=Aehie4aeLeiz
+    volumes:
+      # scripts
+      - ./postgres-entrypoint:/docker-entrypoint-initdb.d
+      # named volumes
+      - mvpmatch-dbdata:/var/lib/postgresql/data
+
+  back:
+    container_name: mvpmatch-back
+    build: ../back
+    ports:
+      - 3000:3000
+    environment:
+      - DB_NAME=mvpmatch
+      - DB_HOST=postgres
+      - DB_PORT=5432
+      - DB_USER=mvpmatch
+      - DB_PASSWORD=Aehie4aeLeiz
+      - PORT=3000
+      - JWT_SECRET=ohNe1Niemaitheopoo7uk1Woh8Che7Ko
+    depends_on:
+      - postgres
+
+#  front:
+#    # build will get tagged with 'image'
+#    build: ../front
+#    environment:
+#      - API_URL=ws://localhost:3000
+#    networks:
+#      - mvpmatch
+#    depends_on:
+#      - back
+
+volumes:
+  mvpmatch-dbdata:
+    name: mvpmatch-dbdata
