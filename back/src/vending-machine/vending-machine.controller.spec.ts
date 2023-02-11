@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { VendingMachineController } from './vending-machine.controller';
+import { VendingMachineService } from './vending-machine.service';
 
 describe('VendingMachineController', () => {
   let controller: VendingMachineController;
@@ -7,7 +8,13 @@ describe('VendingMachineController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [VendingMachineController],
-    }).compile();
+    })
+      .useMocker((token) => {
+        if (token === VendingMachineService) {
+          return {};
+        }
+      })
+      .compile();
 
     controller = module.get<VendingMachineController>(VendingMachineController);
   });

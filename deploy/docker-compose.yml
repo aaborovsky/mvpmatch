@@ -1,7 +1,7 @@
 version: '3.6'
 
 services:
-  postgres:
+  db:
     container_name: mvpmatch-db
     image: postgres:15.1
     ports:
@@ -16,31 +16,31 @@ services:
       # named volumes
       - mvpmatch-dbdata:/var/lib/postgresql/data
 
-  back:
-    container_name: mvpmatch-back
-    build: ../back
+  db_test:
+    container_name: mvpmatch-db-test
+    image: postgres:15.1
     ports:
-      - 3000:3000
+      - 5433:5432
     environment:
-      - DB_NAME=mvpmatch
-      - DB_HOST=postgres
-      - DB_PORT=5432
-      - DB_USER=mvpmatch
-      - DB_PASSWORD=Aehie4aeLeiz
-      - PORT=3000
-      - JWT_SECRET=ohNe1Niemaitheopoo7uk1Woh8Che7Ko
-    depends_on:
-      - postgres
+      - POSTGRES_DB=mvpmatch_test
+      - POSTGRES_USER=mvpmatch_test
+      - POSTGRES_PASSWORD=mvpmatch_test
 
-#  front:
-#    # build will get tagged with 'image'
-#    build: ../front
+#  back:
+#    container_name: mvpmatch-back
+#    build: ../back
+#    ports:
+#      - 3000:3000
 #    environment:
-#      - API_URL=ws://localhost:3000
-#    networks:
-#      - mvpmatch
+#      - DB_NAME=mvpmatch
+#      - DB_HOST=postgres
+#      - DB_PORT=5432
+#      - DB_USER=mvpmatch
+#      - DB_PASSWORD=Aehie4aeLeiz
+#      - PORT=3000
+#      - JWT_SECRET=ohNe1Niemaitheopoo7uk1Woh8Che7Ko
 #    depends_on:
-#      - back
+#      - db
 
 volumes:
   mvpmatch-dbdata:

@@ -1,6 +1,7 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { ProductsController } from './products.controller';
 import { ProductsService } from './products.service';
+import { UsersService } from '../users/users.service';
 
 describe('ProductsController', () => {
   let controller: ProductsController;
@@ -9,7 +10,16 @@ describe('ProductsController', () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [ProductsController],
       providers: [ProductsService],
-    }).compile();
+    })
+      .useMocker((token) => {
+        if (token === 'ProductRepository') {
+          return {};
+        }
+        if (token === UsersService) {
+          return {};
+        }
+      })
+      .compile();
 
     controller = module.get<ProductsController>(ProductsController);
   });

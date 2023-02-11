@@ -8,8 +8,14 @@ describe('UsersController', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       controllers: [UsersController],
-      providers: [UsersService],
-    }).compile();
+      providers: [],
+    })
+      .useMocker((token) => {
+        if (token === UsersService) {
+          return {};
+        }
+      })
+      .compile();
 
     controller = module.get<UsersController>(UsersController);
   });

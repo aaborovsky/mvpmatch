@@ -7,12 +7,10 @@ import { CreateUserDto } from './dto/create-user.dto';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { User, UserId } from './entities/user.entity';
-import * as bcrypt from 'bcrypt';
 import { UpdateUserDto } from './dto/update-user.dto';
 import { LockMode } from '@mikro-orm/core';
 import { VendingMachineService } from '../vending-machine/vending-machine.service';
-
-const BCRYPT_SALT_ROUNDS = 12;
+import { hashPassword } from './utils/hashPassword.util';
 
 @Injectable()
 export class UsersService {
@@ -23,17 +21,14 @@ export class UsersService {
   ) {}
 
   async create(createUserDto: CreateUserDto) {
-    const passwordHashed = await bcrypt.hash(
-      createUserDto.password,
-      BCRYPT_SALT_ROUNDS,
-    );
     return this.userRepo.create(
       {
         coins: {},
         vendingMachine:
+          //TODO: later one could support few simultaneous VendingMachine, so user able to choose: which one he use on creation
           await this.vendingMachineService.getDefaultVendingMachine(),
         deposit: 0,
-        password: passwordHashed,
+        password: await hashPassword(createUserDto.password),
         role: createUserDto.role,
         username: createUserDto.username,
       },
@@ -46,7 +41,7 @@ export class UsersService {
   }
 
   findOne(id: UserId) {
-    return this.userRepo.findOne({ id: id });
+    return this.userRepo.findOne({ id });
   }
 
   findOneByUsername(username: string) {

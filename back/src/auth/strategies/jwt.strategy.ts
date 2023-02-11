@@ -25,17 +25,15 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
   }
 
   async validate(payload: JwtPayload): Promise<AuthenticatedUserDto> {
-    const session = await this.sessionRepo.findOne(payload.sub, {
-      populate: ['user'],
-    });
-    if (!session) {
+    //one have to load session cause it could be invalidated (deleted) with logout/all endpoint
+    if (!(await this.sessionRepo.count({ id: payload.sub }))) {
       throw new UnauthorizedException();
     }
+    //one could trust JWT payload values, cause whole JWT token was signed and verified by base password-jwt
     return {
-      sessionId: session.id,
       id: payload.sub,
-      username: session.user.username,
-      role: session.user.role,
+      username: payload.username,
+      role: payload.role,
     };
   }
 }

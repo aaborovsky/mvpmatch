@@ -1,5 +1,6 @@
 import { Test, TestingModule } from '@nestjs/testing';
 import { VendingMachineService } from './vending-machine.service';
+import { EntityManager } from '@mikro-orm/postgresql';
 
 describe('VendingMachineService', () => {
   let service: VendingMachineService;
@@ -7,7 +8,13 @@ describe('VendingMachineService', () => {
   beforeEach(async () => {
     const module: TestingModule = await Test.createTestingModule({
       providers: [VendingMachineService],
-    }).compile();
+    })
+      .useMocker((token) => {
+        if (token === EntityManager) {
+          return {};
+        }
+      })
+      .compile();
 
     service = module.get<VendingMachineService>(VendingMachineService);
   });

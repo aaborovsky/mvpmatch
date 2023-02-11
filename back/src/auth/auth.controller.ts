@@ -9,10 +9,11 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 @Controller()
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
+
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
   async login(@Body() requestBody: LoginRequestDto, @Req() request: Request) {
-    return this.authService.login(request.user as AuthenticatedUserDto);
+    return this.authService.signJWTToken(request.user as AuthenticatedUserDto);
   }
 
   @UseGuards(JwtAuthGuard)

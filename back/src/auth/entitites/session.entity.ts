@@ -8,7 +8,7 @@ export class Session {
   @PrimaryKey({ type: 'integer', autoincrement: true })
   id: SessionId;
 
-  @ManyToOne({ unique: true })
+  @ManyToOne({ lazy: true, unique: true })
   user: User;
 
   @Property({
