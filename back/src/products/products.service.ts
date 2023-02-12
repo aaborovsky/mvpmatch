@@ -27,13 +27,10 @@ export class ProductsService {
     if (userEntity?.role !== Role.SELLER) {
       throw new ForbiddenException('Only seller could create a product');
     }
-    const product = await this.productRepo.create(
-      {
-        ...createProductDto,
-        seller: userEntity,
-      },
-      { persist: true },
-    );
+    const product = await this.productRepo.create({
+      ...createProductDto,
+      seller: userEntity,
+    });
     await this.productRepo.persistAndFlush(product);
     return product;
   }

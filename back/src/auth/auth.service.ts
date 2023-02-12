@@ -15,6 +15,7 @@ export type JwtPayload = {
   username: string;
   role: Role;
   user_id: UserId;
+  session_id: SessionId;
   sub: SessionId;
 };
 
@@ -25,7 +26,6 @@ export class AuthService {
     private readonly jwtService: JwtService,
     @InjectRepository(Session)
     private readonly sessionRepo: EntityRepository<Session>,
-    private readonly configService: ConfigService<AppConfigType>,
   ) {}
 
   async checkCredentials(
@@ -48,10 +48,7 @@ export class AuthService {
     let session: Session;
     try {
       //it would fails due to unique user constraint
-      session = await this.sessionRepo.create(
-        { user: userEntity },
-        { persist: true },
-      );
+      session = await this.sessionRepo.create({ user: userEntity });
       await this.sessionRepo.persistAndFlush(session);
     } catch (e) {
       throw new BadRequestException(
@@ -64,18 +61,17 @@ export class AuthService {
           username: user.username,
           role: user.role,
           user_id: user.id,
+          session_id: session.id,
           sub: user.id,
         } as JwtPayload,
         //TODO: fix it! no need to pass it, 'JwtModule.register({ secret })' should work
-        { secret: this.configService.get('jwtSecret', { infer: true }) },
+        // { secret: this.configService.get('jwtSecret', { infer: true }) },
       ),
       session,
     };
   }
 
   async logoutAllSessions(user: AuthenticatedUserDto) {
-    const sessions = await this.sessionRepo.find({ user: user.id });
-    sessions.forEach((session) => this.sessionRepo.remove(session));
-    await this.sessionRepo.flush();
+    return this.sessionRepo.createQueryBuilder().delete({ user: user.id });
   }
 }
