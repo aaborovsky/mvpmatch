@@ -1,11 +1,15 @@
 import { MikroOrmModule } from '@mikro-orm/nestjs';
 import { Module } from '@nestjs/common';
-import getMikroORMConfig from './mikro-orm.config';
+import { getMikroORMConfigSync } from './mikro-orm.config';
+import { DatabaseConfigModule } from '../../../config/database/config.module';
+import { DatabaseConfigService } from '../../../config/database/config.service';
 
 @Module({
   imports: [
     MikroOrmModule.forRootAsync({
-      useFactory: getMikroORMConfig,
+      imports: [DatabaseConfigModule],
+      inject: [DatabaseConfigService],
+      useFactory: getMikroORMConfigSync,
     }),
   ],
 })

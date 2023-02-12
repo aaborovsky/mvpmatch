@@ -52,6 +52,7 @@ export class AuthService {
         { user: userEntity },
         { persist: true },
       );
+      await this.sessionRepo.persistAndFlush(session);
     } catch (e) {
       throw new BadRequestException(
         'There is already an active session using your account',
@@ -63,11 +64,12 @@ export class AuthService {
           username: user.username,
           role: user.role,
           user_id: user.id,
-          sub: session.id,
+          sub: user.id,
         } as JwtPayload,
         //TODO: fix it! no need to pass it, 'JwtModule.register({ secret })' should work
         { secret: this.configService.get('jwtSecret', { infer: true }) },
       ),
+      session,
     };
   }
 

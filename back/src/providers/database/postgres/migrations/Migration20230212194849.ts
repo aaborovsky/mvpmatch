@@ -1,20 +1,20 @@
 import { Migration } from '@mikro-orm/migrations';
 
-export class Migration20230211100319 extends Migration {
+export class Migration20230212194849 extends Migration {
   async up(): Promise<void> {
     this.addSql(
-      'create table "vending_machine" ("id" serial primary key, "coins" jsonb not null default {});',
+      'create table "vending_machine" ("id" serial primary key, "coins" jsonb not null default \'{}\');',
     );
 
     this.addSql(
-      'create table "user" ("id" serial primary key, "username" varchar(255) not null, "password" varchar(255) not null, "coins" jsonb not null default {}, "role" smallint not null, "vending_machine_id" int not null);',
+      'create table "user" ("id" serial primary key, "username" varchar(255) not null, "password" varchar(255) not null, "coins" jsonb not null default \'{}\', "role" smallint not null, "vending_machine_id" int not null);',
     );
     this.addSql(
       'alter table "user" add constraint "user_username_unique" unique ("username");',
     );
 
     this.addSql(
-      'create table "session" ("id" serial primary key, "user_id" int not null, "createdAt" timestamptz(0) not null default now());',
+      'create table "session" ("id" serial primary key, "user_id" int null, "createdAt" timestamptz(0) not null default now());',
     );
     this.addSql(
       'alter table "session" add constraint "session_user_id_unique" unique ("user_id");',
@@ -29,7 +29,7 @@ export class Migration20230211100319 extends Migration {
     );
 
     this.addSql(
-      'alter table "session" add constraint "session_user_id_foreign" foreign key ("user_id") references "user" ("id") on update cascade;',
+      'alter table "session" add constraint "session_user_id_foreign" foreign key ("user_id") references "user" ("id") on delete cascade;',
     );
 
     this.addSql(

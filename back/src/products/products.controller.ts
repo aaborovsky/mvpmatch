@@ -21,6 +21,7 @@ import { ProductOwnerInterceptor } from './productOwner.interceptor';
 import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
 import { AuthenticatedUserDto } from '../auth/dto/authenticated-user.dto';
+import { CreateProductResponseDto } from './dto/create-product.response.dto';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -41,7 +42,10 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesRequired(Role.SELLER)
   @Post()
-  create(@Body() createProductDto: CreateProductDto, @Req() req: Request) {
+  create(
+    @Body() createProductDto: CreateProductDto,
+    @Req() req: Request,
+  ): Promise<CreateProductResponseDto> {
     return this.productsService.create(
       createProductDto,
       req.user as AuthenticatedUserDto,

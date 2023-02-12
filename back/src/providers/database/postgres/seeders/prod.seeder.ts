@@ -6,9 +6,15 @@ import { faker, Seeder } from '@mikro-orm/seeder';
 import { Product } from '../../../../products/entities/product.entity';
 import { User } from '../../../../users/entities/user.entity';
 import { Role } from '../../../../roles/role.enum';
+import { hashPassword } from '../../../../users/utils/hashPassword.util';
 
-export class TestSeeder extends Seeder {
+export class ProdSeeder extends Seeder {
   async run(em: EntityManager, context: Dictionary): Promise<void> {
+    const vmCount = await em.count(VendingMachine);
+    if (vmCount) {
+      return;
+    }
+
     const vm = em.create(VendingMachine, {
       coins: {
         [Coin.FIFTY]: 5,
@@ -20,16 +26,13 @@ export class TestSeeder extends Seeder {
     });
 
     const seller = em.create(User, {
-      username: faker.internet.userName(),
-      password: faker.internet.password(),
+      username: 'seller1',
+      password: await hashPassword('seller1Password'),
       coins: {},
       deposit: 0,
       role: Role.SELLER,
       vendingMachine: vm,
     });
-
-    //to make repetitive generation
-    faker.seed(42);
 
     //expensive product
     em.create(Product, {
@@ -47,23 +50,23 @@ export class TestSeeder extends Seeder {
       seller,
     });
 
-    //buyer1
-    const buyer1 = em.create(User, {
-      username: faker.internet.userName(),
-      password: faker.internet.password(),
+    //buyer
+    em.create(User, {
+      username: 'aborovskii',
+      password: await hashPassword('aborovskiiPassword'),
       coins: {},
       deposit: 0,
       role: Role.BUYER,
       vendingMachine: vm,
     });
 
-    //buyer2
-    const buyer2 = em.create(User, {
-      username: faker.internet.userName(),
-      password: faker.internet.password(),
+    //admin
+    em.create(User, {
+      username: 'admin',
+      password: await hashPassword('adminPassword'),
       coins: {},
       deposit: 0,
-      role: Role.BUYER,
+      role: Role.ADMIN,
       vendingMachine: vm,
     });
   }

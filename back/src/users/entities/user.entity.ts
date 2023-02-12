@@ -2,6 +2,7 @@ import { Entity, Enum, ManyToOne, PrimaryKey, Property } from '@mikro-orm/core';
 import { Role } from '../../roles/role.enum';
 import { VendingMachine } from '../../vending-machine/entitites/vending-machine.entity';
 import { Coin } from '../../types';
+import { Exclude } from 'class-transformer';
 
 export type UserId = number;
 
@@ -10,15 +11,15 @@ export class User {
   @PrimaryKey({ type: 'integer', autoincrement: true })
   id: UserId;
 
-  //TODO: check that unique index would be used at findOneByUsername
   @Property({ unique: true })
   username: string;
 
   //hashed password
   @Property()
+  @Exclude()
   password: string;
 
-  @Property({ type: 'json', defaultRaw: '{}' })
+  @Property({ type: 'jsonb', defaultRaw: "'{}'::jsonb" })
   coins: Record<Coin, number>;
 
   @Property({ persist: false })

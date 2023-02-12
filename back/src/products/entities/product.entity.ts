@@ -25,6 +25,6 @@ export class Product {
   @Property()
   productName: string;
 
-  @ManyToOne()
+  @ManyToOne({ lazy: true })
   seller: User;
 }

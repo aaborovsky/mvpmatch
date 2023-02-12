@@ -14,7 +14,7 @@ export class VendingMachine {
   @PrimaryKey({ type: 'integer', autoincrement: true })
   id: VendingMachineId;
 
-  @Property({ type: 'json', defaultRaw: '{}', hidden: true })
+  @Property({ type: 'jsonb', defaultRaw: "'{}'::jsonb", hidden: true })
   coins: Record<Coin, number>;
 
   @Property({ persist: false })

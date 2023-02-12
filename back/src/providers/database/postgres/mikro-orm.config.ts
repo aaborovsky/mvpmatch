@@ -7,10 +7,11 @@ import { Product } from '../../../products/entities/product.entity';
 import { Session } from '../../../auth/entitites/session.entity';
 import { VendingMachine } from '../../../vending-machine/entitites/vending-machine.entity';
 
-const getMikroORMConfig = async (): Promise<Options> => {
-  const app = await NestFactory.createApplicationContext(DatabaseConfigModule);
-  const dbConfigService = app.get(DatabaseConfigService);
+export const getMikroORMConfigSync = (
+  dbConfigService: DatabaseConfigService,
+): Options => {
   return {
+    debug: true,
     migrations: {
       path: './dist/providers/database/postgres/migrations',
       pathTs: './src/providers/database/postgres/migrations',
@@ -28,11 +29,16 @@ const getMikroORMConfig = async (): Promise<Options> => {
     port: dbConfigService.dbPort,
     user: dbConfigService.user,
     password: dbConfigService.password,
-    implicitTransactions: true,
+    implicitTransactions: false,
     schemaGenerator: {
       createForeignKeyConstraints: true,
     },
   };
+};
+
+const getMikroORMConfig = async (): Promise<Options> => {
+  const app = await NestFactory.createApplicationContext(DatabaseConfigModule);
+  return getMikroORMConfigSync(app.get(DatabaseConfigService));
 };
 
 export default getMikroORMConfig;

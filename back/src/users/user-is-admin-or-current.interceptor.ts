@@ -27,7 +27,7 @@ export class UserIsAdminOrCurrentInterceptor implements NestInterceptor {
         'User id must be a route parameter to be verified',
       );
     }
-    if (user.role !== Role.ADMIN && user.id !== params.id) {
+    if (user.role !== Role.ADMIN && user.id != params.id) {
       throw new ForbiddenException('User entity access forbidden');
     }
     return next.handle();

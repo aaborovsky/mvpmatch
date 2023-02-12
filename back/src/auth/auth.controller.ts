@@ -12,7 +12,11 @@ export class AuthController {
 
   @UseGuards(LocalAuthGuard)
   @Post('auth/login')
-  async login(@Body() requestBody: LoginRequestDto, @Req() request: Request) {
+  async login(
+    //not used, but it will force request body validation
+    @Body() requestBody: LoginRequestDto,
+    @Req() request: Request,
+  ) {
     return this.authService.signJWTToken(request.user as AuthenticatedUserDto);
   }
 

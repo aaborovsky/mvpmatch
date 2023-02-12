@@ -22,7 +22,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "{}",
+          "default": "'{}'",
           "mappedType": "json"
         }
       },
@@ -78,7 +78,7 @@
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "default": "{}",
+          "default": "'{}'",
           "mappedType": "json"
         },
         "role": {
@@ -155,7 +155,7 @@
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
-          "nullable": false,
+          "nullable": true,
           "mappedType": "integer"
         },
         "createdAt": {
@@ -204,7 +204,7 @@
             "id"
           ],
           "referencedTableName": "public.user",
-          "updateRule": "cascade"
+          "deleteRule": "cascade"
         }
       }
     },

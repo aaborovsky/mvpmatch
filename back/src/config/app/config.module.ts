@@ -7,9 +7,11 @@ import { AppConfigService } from './config.service';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      envFilePath: ['.env', `.env.${process.env.NODE_ENV}`],
       load: [configuration],
       validationSchema: Joi.object({
-        port: Joi.number().port(),
+        PORT: Joi.number().port().required(),
+        JWT_SECRET: Joi.string().required(),
       }),
     }),
   ],

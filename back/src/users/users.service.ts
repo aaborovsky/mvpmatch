@@ -8,7 +8,7 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { User, UserId } from './entities/user.entity';
 import { UpdateUserDto } from './dto/update-user.dto';
-import { LockMode } from '@mikro-orm/core';
+import { LockMode, RequiredEntityData } from '@mikro-orm/core';
 import { VendingMachineService } from '../vending-machine/vending-machine.service';
 import { hashPassword } from './utils/hashPassword.util';
 
@@ -20,20 +20,22 @@ export class UsersService {
     private readonly vendingMachineService: VendingMachineService,
   ) {}
 
-  async create(createUserDto: CreateUserDto) {
-    return this.userRepo.create(
-      {
-        coins: {},
-        vendingMachine:
-          //TODO: later one could support few simultaneous VendingMachine, so user able to choose: which one he use on creation
-          await this.vendingMachineService.getDefaultVendingMachine(),
-        deposit: 0,
-        password: await hashPassword(createUserDto.password),
-        role: createUserDto.role,
-        username: createUserDto.username,
-      },
-      { persist: true },
-    );
+  async create(createUserDto: CreateUserDto & Pick<User, 'role'>) {
+    if ((await this.userRepo.count({ username: createUserDto.username })) > 0) {
+      throw new BadRequestException('User with such username already exists');
+    }
+    const user = this.userRepo.create({
+      coins: {},
+      vendingMachine:
+        //TODO: later one could support few simultaneous VendingMachine, so user able to choose: which one he use on creation
+        await this.vendingMachineService.getDefaultVendingMachine(),
+      deposit: 0,
+      password: await hashPassword(createUserDto.password),
+      role: createUserDto.role,
+      username: createUserDto.username,
+    });
+    await this.userRepo.persistAndFlush(user);
+    return user;
   }
 
   findAll() {
@@ -51,10 +53,14 @@ export class UsersService {
   async update(id: UserId, updateUserDto: UpdateUserDto) {
     let user = await this.findOneForModifyOrFail(id);
     try {
+      if (updateUserDto.password != undefined) {
+        updateUserDto.password = await hashPassword(updateUserDto.password);
+      }
       user = this.userRepo.assign(user, updateUserDto, {
         onlyProperties: true,
       });
-      return await this.userRepo.persistAndFlush(user);
+      await this.userRepo.persistAndFlush(user);
+      return user;
     } catch (e) {
       throw new BadRequestException(e);
     }
@@ -62,10 +68,7 @@ export class UsersService {
 
   private async findOneForModifyOrFail(id: UserId) {
     try {
-      return await this.userRepo.findOneOrFail(
-        { id: id },
-        { lockMode: LockMode.PESSIMISTIC_WRITE },
-      );
+      return await this.userRepo.findOneOrFail({ id });
     } catch (e) {
       throw new NotFoundException(e);
     }

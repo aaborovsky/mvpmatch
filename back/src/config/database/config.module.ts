@@ -7,13 +7,14 @@ import { DatabaseConfigService } from './config.service';
 @Module({
   imports: [
     ConfigModule.forRoot({
+      envFilePath: ['.env', `.env.${process.env.NODE_ENV}`],
       load: [configuration],
       validationSchema: Joi.object({
-        dbName: Joi.string(),
-        host: Joi.string(),
-        port: Joi.number().port(),
-        user: Joi.number(),
-        password: Joi.number(),
+        DB_NAME: Joi.string().required(),
+        DB_HOST: Joi.string().required(),
+        DB_PORT: Joi.number().port().required(),
+        DB_USER: Joi.string().required(),
+        DB_PASSWORD: Joi.string().required(),
       }),
     }),
   ],

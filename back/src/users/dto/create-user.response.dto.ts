@@ -7,8 +7,10 @@ import {
   IsStrongPassword,
 } from 'class-validator';
 import { Role } from '../../roles/role.enum';
+import { VendingMachine } from '../../vending-machine/entitites/vending-machine.entity';
+import { Exclude } from 'class-transformer';
 
-export class CreateUserDto {
+export class CreateUserResponseDto {
   @IsString()
   @IsNotEmpty()
   @IsAlphanumeric()
@@ -18,4 +20,12 @@ export class CreateUserDto {
   @IsNotEmpty()
   @IsStrongPassword()
   password: string;
+
+  @IsEnum(Role)
+  @IsNotEmpty()
+  @IsInt()
+  role: Role;
+
+  @Exclude()
+  vendingMachine: VendingMachine;
 }
