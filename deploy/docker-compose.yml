@@ -27,13 +27,14 @@ services:
       - POSTGRES_PASSWORD=mvpmatch_test
 
   back:
+    restart: always
     container_name: mvpmatch-back
     build: ../back
     ports:
       - 3000:3000
     environment:
       - DB_NAME=mvpmatch
-      - DB_HOST=postgres
+      - DB_HOST=db
       - DB_PORT=5432
       - DB_USER=mvpmatch
       - DB_PASSWORD=Aehie4aeLeiz
