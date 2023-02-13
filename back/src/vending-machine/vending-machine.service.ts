@@ -132,7 +132,7 @@ export class VendingMachineService {
           };
         } catch (e) {
           if (e instanceof NoCoinsAvailable) {
-            throw new BadRequestException(e);
+            throw new BadRequestException(e.message);
           }
           throw e;
         }

@@ -45,7 +45,7 @@ export class TestSeeder extends Seeder {
 
     //expensive product
     em.create(Product, {
-      cost: parseFloat(faker.commerce.price(0.05, 15.15, 2)),
+      cost: parseFloat(faker.commerce.price(3.75, 15.15, 2)),
       amountAvailable: parseInt(faker.commerce.price(1, 5, 0)),
       productName: faker.commerce.productName(),
       seller,
@@ -57,6 +57,26 @@ export class TestSeeder extends Seeder {
       amountAvailable: parseInt(faker.commerce.price(1, 20, 0)),
       productName: faker.commerce.productName(),
       seller,
+    });
+
+    //buyer1
+    em.create(User, {
+      username: 'buyer1',
+      password: await hashPassword('buyer1Password'),
+      coins: {},
+      deposit: 0,
+      role: Role.BUYER,
+      vendingMachine: vm,
+    });
+
+    //buyer2
+    em.create(User, {
+      username: 'buyer2',
+      password: await hashPassword('buyer2Password'),
+      coins: {},
+      deposit: 0,
+      role: Role.BUYER,
+      vendingMachine: vm,
     });
   }
 }
