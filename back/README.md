@@ -1,6 +1,6 @@
 ## Description
 
-Backend part of [SecretNumber game](https://github.com/SplashSoftware/fullstack-44/blob/main/Instruction.txt) 
+Backend part of [Vending machine app](https://mvpmatch.notion.site/Full-stack-ac8a8b07bee84937968377c840b6fa29) 
 
 ## Installation
 

@@ -9,21 +9,30 @@ import { User, UserId } from '../users/entities/user.entity';
 import { hashPassword } from '../users/utils/hashPassword.util';
 import { ConfigService } from '@nestjs/config';
 import { AppConfigType } from '../config/app/configuration';
+import { Session, SessionId } from './entitites/session.entity';
+import { Role } from '../roles/role.enum';
 
 const TEST_JWT_SECRET = 'test-jwt-secret';
 
 describe('AuthService', () => {
   let service: AuthService;
   let user: User;
-  let sessionRepository: { create: jest.Mock<any, any> };
+  let session: Session;
+  let sessionRepository: {
+    create: jest.Mock<any, any>;
+    findOneOrFail: jest.Mock<any, any>;
+  };
 
   beforeAll(async () => {
     user = new User();
     user.id = 123;
-    // user.coins = {} as Record<Coin, number>;
-    // user.role = Role.BUYER;
+    user.role = Role.BUYER;
     user.username = 'proper_user';
     user.password = await hashPassword('guess');
+
+    session = new Session();
+    session.user = user;
+    session.id = 321;
   });
 
   beforeEach(async () => {
@@ -31,15 +40,12 @@ describe('AuthService', () => {
       imports: [
         PassportModule,
         JwtModule.registerAsync({
-          useFactory: () => {
-            debugger;
-            return {
-              secret: TEST_JWT_SECRET,
-              signOptions: {
-                expiresIn: '365d',
-              },
-            };
-          },
+          useFactory: () => ({
+            secret: TEST_JWT_SECRET,
+            signOptions: {
+              expiresIn: '365d',
+            },
+          }),
         }),
       ],
       providers: [JwtService, AuthService, LocalStrategy, JwtStrategy],
@@ -53,7 +59,17 @@ describe('AuthService', () => {
         }
         if (token === 'SessionRepository') {
           return (sessionRepository = {
-            create: jest.fn().mockImplementation((entityData) => entityData),
+            create: jest
+              .fn()
+              .mockImplementation(async (entityData) => entityData),
+            findOneOrFail: jest
+              .fn()
+              .mockImplementation(async ({ id }: { id: SessionId }) => {
+                if (id === session.id) {
+                  return session;
+                }
+                throw new Error('Session doesnt exist');
+              }),
           });
         }
         if (token === UsersService) {
@@ -72,6 +88,8 @@ describe('AuthService', () => {
         }
       })
       .compile();
+
+    await moduleRef.init();
 
     service = moduleRef.get<AuthService>(AuthService);
   });
@@ -100,6 +118,7 @@ describe('AuthService', () => {
   describe('signJWTToken', () => {
     it('should create a session when credentials are valid', async () => {
       const res = await service.signJWTToken({
+        sessionId: session.id,
         id: user.id,
         username: user.username,
         role: user.role,
@@ -107,15 +126,16 @@ describe('AuthService', () => {
       expect(res.access_token).toBeDefined();
     });
 
-    it('should throw error when credentials are wrong', async () => {
+    it('should throw error when credentials are wrong', () => {
       // noinspection ES6MissingAwait
-      expect(
+      return expect(
         service.signJWTToken({
           id: user.id + 100,
           username: user.username,
           role: user.role,
+          sessionId: session.id + 100,
         }),
-      ).rejects.toEqual(new Error('User doesnt exist'));
+      ).rejects.toEqual(new Error('Session doesnt exist'));
     });
   });
 });

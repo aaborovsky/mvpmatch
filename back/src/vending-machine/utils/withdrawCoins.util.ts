@@ -1,14 +1,18 @@
 import { Coin } from '../../types';
+import { NoCoinsAvailable } from '../errors/no-coins-available.error';
+import BigNumber from 'bignumber.js';
 
 /**
  * Exported for tests
  * @param coins
  */
 export const getBalance = (coins: Record<Coin, number>): number =>
-  Object.entries(coins).reduce(
-    (result, [coin, count]) => result + parseInt(coin) * count,
-    0,
-  );
+  Object.entries(coins)
+    .reduce(
+      (result, [coin, count]) => result.plus((parseInt(coin) * count) / 100),
+      new BigNumber(0),
+    )
+    .toNumber();
 
 /**
  * Typical cash machine task solution based on dynamic programming
@@ -20,7 +24,9 @@ export const withdrawCoins = (
   coinsAvailable: Record<Coin, number>,
 ): Array<Coin> => {
   if (amount > getBalance(coinsAvailable)) {
-    throw new Error('Not enough coins to withdraw');
+    throw new NoCoinsAvailable(
+      'Not enough coins to withdraw, try to buy later. You may withdraw your deposit with reset right now.',
+    );
   }
 
   /**
@@ -44,9 +50,10 @@ export const withdrawCoins = (
 
     const currentDenomination = denominations[0];
     const availableCount = coinsAvailable[currentDenomination] ?? 0;
-    const curDenominationCoinsRequired = Math.floor(
-      amount / currentDenomination,
-    );
+    const curDenominationCoinsRequired = new BigNumber(amount)
+      .div(currentDenomination / 100)
+      .integerValue(BigNumber.ROUND_DOWN)
+      .toNumber();
     const countToWithdraw = Math.min(
       availableCount,
       curDenominationCoinsRequired,
@@ -54,7 +61,7 @@ export const withdrawCoins = (
 
     for (let i = countToWithdraw; i >= 0; i--) {
       const result = collect(
-        amount - i * currentDenomination,
+        new BigNumber(amount).minus((i * currentDenomination) / 100).toNumber(),
         denominations.slice(1),
       );
 
@@ -73,7 +80,9 @@ export const withdrawCoins = (
 
   const result = collect(amount, denominationsSortedFromBigToSmall);
   if (!result) {
-    throw new Error('Amount could not be withdrawn, no proper available coins');
+    throw new NoCoinsAvailable(
+      'Amount could not be withdrawn, no proper available coins. Try to deposit without change.',
+    );
   }
   return result;
 };

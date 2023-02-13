@@ -1,4 +1,5 @@
 import {
+  BadRequestException,
   ForbiddenException,
   Injectable,
   NotFoundException,
@@ -13,6 +14,8 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { Role } from '../roles/role.enum';
 import { QueryOrder } from '@mikro-orm/core';
 import { UsersService } from '../users/users.service';
+import BigNumber from 'bignumber.js';
+import { getMinCoinAmount } from './utils/getMinCoin.util';
 
 @Injectable()
 export class ProductsService {
@@ -27,6 +30,15 @@ export class ProductsService {
     if (userEntity?.role !== Role.SELLER) {
       throw new ForbiddenException('Only seller could create a product');
     }
+
+    if (
+      !new BigNumber(createProductDto.cost).mod(getMinCoinAmount()).isZero()
+    ) {
+      throw new BadRequestException(
+        'Product cost must be multiple of smallest coin denomination to be able to withdraw a change',
+      );
+    }
+
     const product = await this.productRepo.create({
       ...createProductDto,
       seller: userEntity,

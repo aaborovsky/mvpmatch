@@ -5,8 +5,8 @@ describe('withdrawCoins', () => {
   it('should return proper values', () => {
     expect(
       withdrawCoins(
-        225,
-        //balance is 285
+        2.25,
+        //balance is 2.85
         {
           [Coin.FIFTY]: 4,
           [Coin.TWENTY]: 3,
@@ -27,8 +27,8 @@ describe('withdrawCoins', () => {
   it('should return proper values for tricky case', () => {
     expect(
       withdrawCoins(
-        60,
-        //balance is 110
+        0.6,
+        //balance is 1.10
         {
           [Coin.FIFTY]: 1,
           [Coin.TWENTY]: 3,
@@ -42,8 +42,8 @@ describe('withdrawCoins', () => {
   it('should return proper values when one higher coin count is not enough', () => {
     expect(
       withdrawCoins(
-        225,
-        //balance is 285
+        2.25,
+        //balance is 2.85
         {
           [Coin.FIFTY]: 4,
           [Coin.TWENTY]: 0,
@@ -65,8 +65,8 @@ describe('withdrawCoins', () => {
   it('should throw error, cause amount cannot be withdrawn due to low balance', () => {
     expect(() =>
       withdrawCoins(
-        225,
-        //balance is 215
+        2.25,
+        //balance is 2.15
         {
           [Coin.FIFTY]: 4,
           [Coin.TWENTY]: 0,
@@ -80,8 +80,8 @@ describe('withdrawCoins', () => {
   it('should throw error, cause amount cannot be withdrawn due to now such denominations balance', () => {
     expect(() =>
       withdrawCoins(
-        223,
-        //balance is 285
+        2.23,
+        //balance is 2.85
         {
           [Coin.FIFTY]: 4,
           [Coin.TWENTY]: 3,

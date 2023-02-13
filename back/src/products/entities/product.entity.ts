@@ -19,7 +19,7 @@ export class Product {
   amountAvailable: number;
 
   @Check<Product>({ expression: (fields) => `${fields.cost}>=0` })
-  @Property({ type: 'decimal' })
+  @Property({ type: 'float' })
   cost: number;
 
   @Property()

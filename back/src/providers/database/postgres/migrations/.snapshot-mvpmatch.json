@@ -230,14 +230,12 @@
         },
         "cost": {
           "name": "cost",
-          "type": "numeric(10,0)",
+          "type": "real",
           "unsigned": false,
           "autoincrement": false,
           "primary": false,
           "nullable": false,
-          "precision": 10,
-          "scale": 0,
-          "mappedType": "decimal"
+          "mappedType": "float"
         },
         "product_name": {
           "name": "product_name",

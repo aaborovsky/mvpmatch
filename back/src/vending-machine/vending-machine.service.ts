@@ -17,6 +17,7 @@ import { VendingMachine } from './entitites/vending-machine.entity';
 import { withdrawCoins } from './utils/withdrawCoins.util';
 import { Coin } from '../types';
 import { getCoinsFromDenominationMap } from './utils/getCoinsFromDenominationMap.util';
+import { NoCoinsAvailable } from './errors/no-coins-available.error';
 
 @Injectable()
 export class VendingMachineService {
@@ -90,7 +91,6 @@ export class VendingMachineService {
         await em.lock(vendingMachine, LockMode.PESSIMISTIC_WRITE);
 
         //coins deposited to vendingMachine's coins storage from user
-        //put coins on user's deposit, to be able to withdraw exactly these coins in case of reset or spend theme
         Object.entries<number>(userEntity.coins).forEach(([_coin, count]) => {
           const coin = parseInt(_coin) as Coin;
           vendingMachine.coins[coin] =
@@ -98,25 +98,44 @@ export class VendingMachineService {
               ? vendingMachine.coins[coin] + count
               : count;
         });
+
+        const changeTotalToBeWithdrawn = new BigNumber(
+          userEntity.deposit,
+        ).minus(totalToSpend);
+
         //withdraw coins from user's deposit
         userEntity.coins = {} as Record<Coin, number>;
 
-        const change = withdrawCoins(
-          new BigNumber(userEntity.deposit).minus(totalToSpend).toNumber(),
-          vendingMachine.coins,
-        );
+        try {
+          const change =
+            changeTotalToBeWithdrawn.isNegative() ||
+            changeTotalToBeWithdrawn.isZero()
+              ? []
+              : withdrawCoins(
+                  changeTotalToBeWithdrawn.toNumber(),
+                  vendingMachine.coins,
+                );
 
-        //Do all modifications to instances and persist them in single transaction commit
+          //Do all modifications to instances and persist them in single transactional commit
+          product.amountAvailable -= request.amount;
+          change.forEach((coin) => (vendingMachine.coins[coin] -= 1));
+          await em.persistAndFlush([userEntity, product]);
 
-        product.amountAvailable -= request.amount;
-        change.forEach((coin) => (vendingMachine.coins[coin] = change[coin]));
-        await em.persistAndFlush([userEntity, product]);
-
-        return {
-          spent: totalToSpend.toNumber(),
-          products: ([] as Array<Product>).fill(product, request.amount),
-          change,
-        };
+          return {
+            spent: totalToSpend.toNumber(),
+            products: new Array<Product>(request.amount).fill(
+              product,
+              0,
+              request.amount,
+            ),
+            change,
+          };
+        } catch (e) {
+          if (e instanceof NoCoinsAvailable) {
+            throw new BadRequestException(e);
+          }
+          throw e;
+        }
       },
       {
         //this is the default isolation level for Postgres, just make it explicit

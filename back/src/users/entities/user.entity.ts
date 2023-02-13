@@ -3,6 +3,7 @@ import { Role } from '../../roles/role.enum';
 import { VendingMachine } from '../../vending-machine/entitites/vending-machine.entity';
 import { Coin } from '../../types';
 import { Exclude } from 'class-transformer';
+import BigNumber from 'bignumber.js';
 
 export type UserId = number;
 
@@ -24,10 +25,15 @@ export class User {
 
   @Property({ persist: false })
   get deposit(): number {
-    return Object.entries(this.coins).reduce(
-      (result, [coin, amount]) => result + amount * (parseInt(coin) as Coin),
-      0,
-    );
+    return Object.entries(this.coins)
+      .reduce(
+        (result, [coin, amount]) =>
+          result.plus(
+            new BigNumber(amount).multipliedBy(parseInt(coin) as Coin).div(100),
+          ),
+        new BigNumber(0),
+      )
+      .toNumber();
   }
 
   @Enum()

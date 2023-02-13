@@ -58,25 +58,5 @@ export class TestSeeder extends Seeder {
       productName: faker.commerce.productName(),
       seller,
     });
-
-    //buyer1
-    em.create(User, {
-      username: 'buyer1',
-      password: await hashPassword('buyer1Password'),
-      coins: {},
-      deposit: 0,
-      role: Role.BUYER,
-      vendingMachine: vm,
-    });
-
-    //buyer2
-    em.create(User, {
-      username: 'buyer2',
-      password: await hashPassword('buyer2Password'),
-      coins: {},
-      deposit: 0,
-      role: Role.BUYER,
-      vendingMachine: vm,
-    });
   }
 }
