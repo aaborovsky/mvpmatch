@@ -40,7 +40,6 @@ describe('AppController (e2e)', () => {
     const seeder = orm.getSeeder();
     await orm.getSchemaGenerator().refreshDatabase();
 
-    // Seed using a seeder defined by you
     await seeder.seed(TestSeeder);
 
     seller1Bearer = (
@@ -124,13 +123,13 @@ describe('AppController (e2e)', () => {
           {
             id: 2,
             amountAvailable: 12,
-            cost: '3',
+            cost: 3,
             productName: 'Awesome Bronze Table',
           },
           {
             id: 1,
             amountAvailable: 4,
-            cost: '6',
+            cost: 8,
             productName: 'Unbranded Wooden Fish',
           },
         ]));
@@ -143,7 +142,7 @@ describe('AppController (e2e)', () => {
         .expect({
           id: 1,
           amountAvailable: 4,
-          cost: '6',
+          cost: 8,
           productName: 'Unbranded Wooden Fish',
         }));
 
@@ -281,11 +280,10 @@ describe('AppController (e2e)', () => {
           .expect({ deposit: 0.85 });
 
         await request(app.getHttpServer())
-          .get('/users/1')
+          .get('/users/3')
           .set('Authorization', `Bearer ${buyer1Bearer}`)
-          .expect(200)
-          .expect({
-            id: 2,
+          .expect(200, {
+            id: 3,
             username: 'buyer1',
             coins: {
               '5': 1,

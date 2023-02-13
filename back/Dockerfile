@@ -4,4 +4,4 @@ COPY package*.json ./
 RUN npm install
 COPY . .
 RUN npm run build
-ENTRYPOINT ["npm run migrate && node dist/main.js"]
+ENTRYPOINT ["npm run migrate && npm start"]
