@@ -11,7 +11,6 @@ export const getMikroORMConfigSync = (
   dbConfigService: DatabaseConfigService,
 ): Options => {
   return {
-    debug: true,
     migrations: {
       path: './dist/providers/database/postgres/migrations',
       pathTs: './src/providers/database/postgres/migrations',

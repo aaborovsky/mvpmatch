@@ -3,6 +3,7 @@ import { PassportStrategy } from '@nestjs/passport';
 import { Strategy } from 'passport-local';
 import { AuthService } from '../auth.service';
 import { AuthenticatedUserDto } from '../dto/authenticated-user.dto';
+import { plainToInstance } from 'class-transformer';
 
 @Injectable()
 export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
@@ -16,8 +17,12 @@ export class LocalStrategy extends PassportStrategy(Strategy, 'local') {
   ): Promise<AuthenticatedUserDto> {
     const user = await this.authService.checkCredentials(username, password);
     if (!user) {
-      throw new BadRequestException('Wrong credentials');
+      throw new BadRequestException("Wrong credentials or user doesn't exist");
     }
-    return user;
+    const session = await this.authService.createSession(user);
+    return plainToInstance(AuthenticatedUserDto, {
+      ...user,
+      sessionId: session.id,
+    });
   }
 }

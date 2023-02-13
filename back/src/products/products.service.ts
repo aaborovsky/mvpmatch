@@ -68,4 +68,12 @@ export class ProductsService {
       .where({ id: productId, seller: sellerId });
     return productsCount >= 1;
   }
+
+  async doesProductExist(productId: ProductId) {
+    const productsCount = await this.productRepo
+      .createQueryBuilder()
+      .count('id')
+      .where({ id: productId });
+    return productsCount >= 1;
+  }
 }

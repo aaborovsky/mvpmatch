@@ -46,7 +46,7 @@ export class UsersService {
     return this.userRepo.findOne({ id });
   }
 
-  findOneByUsername(username: string) {
+  findOneByUsernameWithSession(username: string) {
     return this.userRepo.findOne({ username });
   }
 

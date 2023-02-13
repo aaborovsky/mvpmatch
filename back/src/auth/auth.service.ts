@@ -1,4 +1,8 @@
-import { BadRequestException, Injectable } from '@nestjs/common';
+import {
+  BadRequestException,
+  ForbiddenException,
+  Injectable,
+} from '@nestjs/common';
 import { UsersService } from '../users/users.service';
 import { JwtService } from '@nestjs/jwt';
 import * as bcrypt from 'bcrypt';
@@ -6,17 +10,14 @@ import { InjectRepository } from '@mikro-orm/nestjs';
 import { Session, SessionId } from './entitites/session.entity';
 import { EntityRepository } from '@mikro-orm/postgresql';
 import { AuthenticatedUserDto } from './dto/authenticated-user.dto';
-import { UserId } from '../users/entities/user.entity';
+import { User, UserId } from '../users/entities/user.entity';
 import { Role } from '../roles/role.enum';
-import { ConfigService } from '@nestjs/config';
-import { AppConfigType } from '../config/app/configuration';
 
 export type JwtPayload = {
   username: string;
   role: Role;
   user_id: UserId;
-  session_id: SessionId;
-  sub: SessionId;
+  sub: string; //SessionId
 };
 
 @Injectable()
@@ -28,50 +29,49 @@ export class AuthService {
     private readonly sessionRepo: EntityRepository<Session>,
   ) {}
 
-  async checkCredentials(
-    username: string,
-    pass: string,
-  ): Promise<AuthenticatedUserDto | null> {
-    const user = await this.usersService.findOneByUsername(username);
+  async checkCredentials(username: string, pass: string): Promise<User | null> {
+    const user = await this.usersService.findOneByUsernameWithSession(username);
     if (user && (await bcrypt.compare(pass, user.password))) {
-      const { password, ...result } = user;
-      return result;
+      return user;
     }
     return null;
   }
 
   async signJWTToken(user: AuthenticatedUserDto) {
-    const userEntity = await this.usersService.findOne(user.id);
-    if (!userEntity) {
-      throw new BadRequestException('User doesnt exist');
-    }
     let session: Session;
     try {
-      //it would fails due to unique user constraint
-      session = await this.sessionRepo.create({ user: userEntity });
-      await this.sessionRepo.persistAndFlush(session);
+      session = await this.sessionRepo.findOneOrFail({
+        id: user.sessionId,
+      });
     } catch (e) {
-      throw new BadRequestException(
-        'There is already an active session using your account',
-      );
+      //session was not found for some reason
+      throw new ForbiddenException(e);
     }
     return {
-      access_token: this.jwtService.sign(
-        {
-          username: user.username,
-          role: user.role,
-          user_id: user.id,
-          session_id: session.id,
-          sub: user.id,
-        } as JwtPayload,
-        //TODO: fix it! no need to pass it, 'JwtModule.register({ secret })' should work
-        // { secret: this.configService.get('jwtSecret', { infer: true }) },
-      ),
+      access_token: this.jwtService.sign({
+        username: user.username,
+        role: user.role,
+        user_id: user.id,
+        sub: String(session.id),
+      } as JwtPayload),
       session,
     };
   }
 
   async logoutAllSessions(user: AuthenticatedUserDto) {
     return this.sessionRepo.createQueryBuilder().delete({ user: user.id });
+  }
+
+  async createSession(user: User) {
+    try {
+      //it would fails due to unique user constraint
+      const session = await this.sessionRepo.create({ user });
+      await this.sessionRepo.persistAndFlush(session);
+      return session;
+    } catch (e) {
+      throw new BadRequestException(
+        'There is already an active session using your account',
+      );
+    }
   }
 }

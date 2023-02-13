@@ -22,6 +22,7 @@ import { JwtAuthGuard } from '../auth/guards/jwt-auth.guard';
 import { Request } from 'express';
 import { AuthenticatedUserDto } from '../auth/dto/authenticated-user.dto';
 import { CreateProductResponseDto } from './dto/create-product.response.dto';
+import { plainToInstance } from 'class-transformer';
 
 @ApiBearerAuth()
 @UseGuards(JwtAuthGuard)
@@ -42,13 +43,16 @@ export class ProductsController {
   @UseGuards(JwtAuthGuard, RolesGuard)
   @RolesRequired(Role.SELLER)
   @Post()
-  create(
+  async create(
     @Body() createProductDto: CreateProductDto,
     @Req() req: Request,
   ): Promise<CreateProductResponseDto> {
-    return this.productsService.create(
-      createProductDto,
-      req.user as AuthenticatedUserDto,
+    return plainToInstance(
+      CreateProductResponseDto,
+      await this.productsService.create(
+        createProductDto,
+        req.user as AuthenticatedUserDto,
+      ),
     );
   }
 

@@ -7,7 +7,7 @@ import { JwtPayload } from '../auth.service';
 import { AuthenticatedUserDto } from '../dto/authenticated-user.dto';
 import { InjectRepository } from '@mikro-orm/nestjs';
 import { EntityRepository } from '@mikro-orm/postgresql';
-import { Session } from '../entitites/session.entity';
+import { Session, SessionId } from '../entitites/session.entity';
 
 @Injectable()
 export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
@@ -25,15 +25,16 @@ export class JwtStrategy extends PassportStrategy(Strategy, 'jwt') {
   }
 
   async validate(payload: JwtPayload): Promise<AuthenticatedUserDto> {
-    //one have to load session cause it could be invalidated (deleted) with logout/all endpoint
-    if ((await this.sessionRepo.count({ id: payload.sub })) > 0) {
-      throw new UnauthorizedException();
+    //one have to load session because it could be invalidated (deleted) with logout/all endpoint
+    if (!(await this.sessionRepo.count({ id: Number(payload.sub) }))) {
+      throw new UnauthorizedException('Session not found');
     }
     //one could trust JWT payload values, cause whole JWT token was signed and verified by base password-jwt
     return {
-      id: payload.sub,
+      id: payload.user_id,
       username: payload.username,
       role: payload.role,
+      sessionId: Number(payload.sub),
     };
   }
 }

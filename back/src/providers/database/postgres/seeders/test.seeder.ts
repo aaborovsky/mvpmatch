@@ -20,9 +20,20 @@ export class TestSeeder extends Seeder {
       balance: 0,
     });
 
+    //seller1
     const seller = em.create(User, {
       username: 'seller1',
       password: await hashPassword('seller1Password'),
+      coins: {},
+      deposit: 0,
+      role: Role.SELLER,
+      vendingMachine: vm,
+    });
+
+    //seller2
+    em.create(User, {
+      username: 'seller2',
+      password: await hashPassword('seller2Password'),
       coins: {},
       deposit: 0,
       role: Role.SELLER,
@@ -49,7 +60,7 @@ export class TestSeeder extends Seeder {
     });
 
     //buyer1
-    const buyer1 = em.create(User, {
+    em.create(User, {
       username: 'buyer1',
       password: await hashPassword('buyer1Password'),
       coins: {},
@@ -59,7 +70,7 @@ export class TestSeeder extends Seeder {
     });
 
     //buyer2
-    const buyer2 = em.create(User, {
+    em.create(User, {
       username: 'buyer2',
       password: await hashPassword('buyer2Password'),
       coins: {},
