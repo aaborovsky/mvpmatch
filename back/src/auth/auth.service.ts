@@ -36,7 +36,7 @@ export class AuthService {
     username: string,
     pass: string,
   ): Promise<Omit<User, 'password'> | null> {
-    const user = await this.usersService.findOneByUsernameWithSession(username);
+    const user = await this.usersService.findOneByUsername(username);
     if (user && (await bcrypt.compare(pass, user.password))) {
       const { password, ...userWithoutPassword } = user;
       return userWithoutPassword;

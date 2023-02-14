@@ -74,7 +74,7 @@ describe('AuthService', () => {
         }
         if (token === UsersService) {
           return {
-            findOneByUsernameWithSession: jest
+            findOneByUsername: jest
               .fn()
               .mockImplementation(async (username: string) =>
                 username === user.username ? user : null,
